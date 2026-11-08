@@ -1,6 +1,6 @@
 services:
   uptime:
-    image: louislam/uptime-kuma:2.4.0-slim-rootless@sha256:49bcf79ebbcb992d288d98107fcd33a35553340c6b19259c7effe374572a6b7e
+    image: docker.io/louislam/uptime-kuma:2.5.9-slim-rootless@sha256:053a48927ee714b1da78c6810041a44a266bd8c06dc30ead5b3f459d0f219fb0
     container_name: uptime-kuma
     restart: always
     security_opt:
@@ -13,28 +13,14 @@ services:
       - .data:/app/data:z
     environment:
       - TZ=Asia/Ho_Chi_Minh
-    depends_on:
-      init:
-        condition: service_completed_successfully
+    pre_start:
+      - image: docker.io/library/busybox:1.37.0@sha256:a7dbc319b1438115a207e11930dc4bb3e643dcb3ec0bdd694bb36cd8fad289ec
+        cap_add:
+          - CHOWN
+        command: chown 1000:1000 /app/data
     healthcheck:
       test: curl -f http://localhost:3001
       interval: 60s
-      retries: 3
-      start_period: 1s
       timeout: 1s
-
-  init:
-    image: docker.io/library/busybox:1.37.0@sha256:9532d8c39891ca2ecde4d30d7710e01fb739c87a8b9299685c63704296b16028
-    container_name: uptime-init
-    restart: "no"
-    security_opt:
-      - "no-new-privileges=true"
-    read_only: true
-    command:
-      - sh
-      - -c
-      - |
-        mkdir -p /app/data
-        chown 1000:1000 /app/data
-    volumes:
-      - .data:/app/data:z
+      retries: 3
+      start_period: 30s
